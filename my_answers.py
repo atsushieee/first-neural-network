@@ -91,15 +91,13 @@ class NeuralNetwork(object):
 
         # TODO: Output error - Replace this value with your calculations.
         error = y - final_outputs # Output layer error is the difference between desired target and actual output.
-        
+       
+        '''### Before Review
         # TODO: Calculate the hidden layer's contribution to the error
         hidden_error = error * self.weights_hidden_to_output.T
-        #print(hidden_outputs[:, None][0].shape)
-        
         # TODO: Backpropagated error terms - Replace these values with your calculations.
         output_error_term = error * hidden_outputs[:, None][0]
-        #output_error_term = np.reshape(output_error_term, (self.hidden_nodes, self.output_nodes))
-        #print(delta_weights_h_o .shape)
+        output_error_term = np.reshape(output_error_term, (self.hidden_nodes, self.output_nodes))
         
         #print(X.shape)
         #print(X.T)
@@ -110,10 +108,22 @@ class NeuralNetwork(object):
         
         hidden_error_term = np.dot(X.T, hidden_error_base)
         
+        # Weight step (hidden to output)
+        delta_weights_h_o += output_error_term
         # Weight step (input to hidden)
         delta_weights_i_h += hidden_error_term
+        '''
+        
+        ### After Review
+        # TODO: Calculate the hidden layer's contribution to the error
+        hidden_error = error * self.weights_hidden_to_output.T * (1 - hidden_outputs) * hidden_outputs
+        output_error_term = error * hidden_outputs[:, None]        
+        hidden_error_term = hidden_error * X[:, None]
         # Weight step (hidden to output)
-        delta_weights_h_o += output_error_term.T
+        delta_weights_h_o += output_error_term
+        # Weight step (input to hidden)
+        delta_weights_i_h += hidden_error_term
+        
         return delta_weights_i_h, delta_weights_h_o
 
     def update_weights(self, delta_weights_i_h, delta_weights_h_o, n_records):
@@ -152,7 +162,7 @@ class NeuralNetwork(object):
 #########################################################
 # Set your hyperparameters here
 ##########################################################
-iterations = 3000
+iterations = 6000
 learning_rate = 0.8
 hidden_nodes = 30
 output_nodes = 1
